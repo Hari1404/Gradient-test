@@ -1,0 +1,63 @@
+/* The time machine panel. Above everything on the timer screen (the stop alert is the highest layer there). */
+.gt-dev {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 1000;
+  font: 12px/1.35 system-ui, sans-serif;
+  color: #fff;
+  max-width: min(280px, calc(100vw - 16px));
+}
+
+.gt-dev-toggle,
+.gt-dev-panel button {
+  font: inherit;
+  color: #fff;
+  background: rgba(20, 20, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 8px;
+  padding: 6px 10px;
+  min-height: 32px;
+  cursor: pointer;
+}
+
+.gt-dev-toggle {
+  opacity: 0.55;
+}
+
+.gt-dev[data-open="on"] .gt-dev-toggle,
+.gt-dev-toggle:hover,
+.gt-dev-toggle:focus-visible {
+  opacity: 1;
+}
+
+.gt-dev-panel {
+  margin-top: 6px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(10, 10, 12, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gt-dev-title {
+  margin: 0 0 6px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.gt-dev-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.gt-dev-panel button:hover,
+.gt-dev-panel button:focus-visible {
+  border-color: #fff;
+}
+
+.gt-dev-note {
+  margin: 0;
+  min-height: 1.35em;
+  color: #ffb4a8;
+}

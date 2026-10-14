@@ -1,0 +1,750 @@
+/* Styles of the Pro Timer screen. Tag: see CODE_MAP.md in the project root. */
+
+@import "@fontsource-variable/space-grotesk";
+
+/* AB:TIMER.SCREEN:START */
+/* The screen: black, with the moving background (TimerBackground.tsx) behind everything while a session runs. The menu button (menu.css) floats above it, so the top has room for it. The screen is its own stacking box (position and isolation), so the background, which sits at the bottom of it, can never fall behind the page. */
+.ab-timer {
+  position: relative;
+  isolation: isolate;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 72px 20px 32px;
+  --ab-timer-reserve: 298px;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  font-family: "Space Grotesk Variable", system-ui, sans-serif;
+}
+
+/* The dial: a square box. The ball (TimerBall.tsx) sits behind the two clocks in the middle. It is drawn above the background (z-index 1). */
+.ab-timer-dial {
+  position: relative;
+  z-index: 1;
+  width: min(84vw, 400px, max(150px, calc(100dvh - var(--ab-timer-reserve))));
+  aspect-ratio: 1;
+}
+
+.ab-timer-readout {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* The digits: Space Grotesk medium. Its digits are not all the same width by default, so tabular-nums switches on the fixed width ones (checked in the font file at weights 400, 500 and 600). CONNECTIONS.md C32. */
+.ab-timer-big {
+  margin: 0;
+  font-size: min(clamp(2.4rem, 13vw, 4.25rem), 17cqw);
+  font-weight: 500;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 22px rgba(0, 0, 0, 0.75), 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.ab-timer-small {
+  margin: 0;
+  font-size: min(clamp(1.05rem, 4.6vw, 1.5rem), 6cqw);
+  font-weight: 500;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.6);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 14px rgba(0, 0, 0, 0.75), 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Paused: the digits blink slowly (the ball stands still and dims, see the ball rules below). */
+.ab-timer[data-state="paused"] .ab-timer-big {
+  animation: ab-timer-blink 1.8s ease-in-out infinite;
+}
+
+/* Still loading (the first reading of the database is on its way): the two clocks are invisible, so there are no zeros that jump to the real numbers. When the reading is there, the rule below stops matching and the clocks and the buttons fade in (ab-timer-reveal for the clocks and ab-timer-reveal-actions for the buttons, 300 ms; CONNECTIONS.md C46). The fade is an animation that starts when the loading ends and does not start again when the buttons change. */
+.ab-timer[data-link="loading"] .ab-timer-readout {
+  opacity: 0;
+}
+
+.ab-timer:not([data-link="loading"]) .ab-timer-readout {
+  animation: ab-timer-reveal 300ms ease;
+}
+
+@keyframes ab-timer-reveal {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Connection problem: the line has two lines and the Try again button is there, so the dial leaves more room (C40). */
+.ab-timer[data-link="problem"] {
+  --ab-timer-reserve: 384px;
+}
+
+@keyframes ab-timer-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-timer[data-state="paused"] .ab-timer-big {
+    animation: none;
+    opacity: 0.55;
+  }
+}
+
+/* The line under the dial: No connection, an error, or what happened to the session that was just ended. It keeps its height so that nothing jumps. */
+.ab-timer-note {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  min-height: 1.4em;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.7);
+}
+
+.ab-timer-retry {
+  position: relative;
+  z-index: 1;
+  padding: 8px 18px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+/* The buttons: Start, or Pause and Resume above the Hold Button. The box keeps its height while loading so that the dial does not move. */
+.ab-timer-actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 124px;
+}
+
+/* The blank pill that stands where the buttons will be while the first reading is on its way: the size of the Start pill, faint, breathing slowly. It is not a button and has no text, so a running session never shows a wrong label for a moment. CONNECTIONS.md C46. */
+.ab-timer-wait {
+  width: 100%;
+  height: 58px;
+  border-radius: 999px;
+  background: #fff;
+  opacity: 0.18;
+  animation: ab-timer-wait 1.4s ease-in-out infinite;
+}
+
+@keyframes ab-timer-wait {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.ab-timer-pill {
+  width: 100%;
+  height: 58px;
+  padding: 0 28px;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  color: #000;
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ab-timer-pill:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ab-timer-pill:active:enabled {
+  transform: scale(0.98);
+}
+
+.ab-timer-end {
+  width: 100%;
+}
+
+/* The buttons fade in when the first reading is there (see the clocks above and CONNECTIONS.md C46). They start at the brightness of the blank pill (ab-timer-wait) that was there while loading, so the pill grows into the real button instead of blinking. */
+.ab-timer:not([data-link="loading"]) .ab-timer-actions {
+  animation: ab-timer-reveal-actions 300ms ease;
+}
+
+@keyframes ab-timer-reveal-actions {
+  from {
+    opacity: 0.18;
+  }
+}
+
+/* A person who asked their device for less motion gets no fades and no breathing. This rule is written AFTER the rules it switches off (same weight, the later one wins). */
+@media (prefers-reduced-motion: reduce) {
+  .ab-timer:not([data-link="loading"]) .ab-timer-readout,
+  .ab-timer:not([data-link="loading"]) .ab-timer-actions,
+  .ab-timer-wait {
+    animation: none;
+  }
+}
+
+/* The box of the line, the Try again button and the buttons (TimerScreen.tsx). On a phone it is not a box at all (display contents), so the phone screen is one column exactly as before. On a wide screen it is the right-hand side, see below and CONNECTIONS.md C39. */
+.ab-timer-side {
+  display: contents;
+}
+
+/* A wide screen (a laptop, a tablet held wide; a phone held sideways is too small and stays one column): the dial is a big circle on the left, and the line and the buttons stand on the right, in the middle of the screen's height. These rules must stay AFTER the phone rules above, because they replace some of them. They must not change overflow, z-index or pointer-events (CONNECTIONS.md C31). CONNECTIONS.md C39. */
+@media (min-width: 1000px) and (min-height: 560px), (min-width: 600px) and (min-aspect-ratio: 5/4) {
+  .ab-timer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    column-gap: clamp(32px, 5vw, 96px);
+    padding: 72px clamp(32px, 6vw, 112px) 48px;
+  }
+
+  .ab-timer-dial {
+    grid-column: 1;
+    justify-self: center;
+    width: min(100%, calc(100dvh - 168px), 780px);
+  }
+
+  /* The digits grow with the dial: 17 and 6 percent of its width (the readout is a size container, see the phone rules), the same share as on a phone (68 and 24 of 400). */
+  .ab-timer-big {
+    font-size: 17cqw;
+  }
+
+  .ab-timer-small {
+    font-size: 6cqw;
+  }
+
+  .ab-timer-side {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+}
+/* AB:TIMER.SCREEN:END */
+
+/* AB:TIMER.BALL:START */
+/* The box of the glowing ball (TimerBall.tsx). It is 136 percent of the dial, so the glow has room, and it sits behind the clocks. It never catches a tap. The fade time is the same as BALL_FADE_MS in ballLook.ts (CONNECTIONS.md C31 and C35). */
+.ab-timer-ball {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 136%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: opacity 700ms ease;
+}
+
+.ab-timer-ball[data-out="yes"] {
+  opacity: 0;
+}
+
+.ab-timer[data-state="paused"] .ab-timer-ball {
+  opacity: 0.4;
+}
+/* AB:TIMER.BALL:END */
+
+/* AB:TIMER.STOP-ALERT:START */
+/* The stop alert (StopAlert.tsx): a dark layer over the whole timer screen with the line and the two buttons in the middle. It is the last child of .ab-timer (position relative, so inset 0 is the whole screen) and its z-index (2) is higher than the dial and the buttons (1, see C31), so it covers them. The menu button floats above it (menu.css, z-index 40). It must stay plain: no blur behind it (a blur over the moving background made the phone laggy, C25). It scrolls by itself when a very low window is too small for the card, and the card is centred with margin auto so that its top is never cut off. This part sits BEFORE the part of the moving background on purpose: a test of the background reads the last reduced-motion rule of this file and expects it to be the background's own. CONNECTIONS.md C43. */
+.ab-alert {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  padding: 72px 20px 32px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.82);
+  animation: ab-alert-in 250ms ease;
+}
+
+.ab-alert-card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 560px;
+  margin: auto;
+  outline: none;
+}
+
+/* The line (LineText.tsx): words in boxes with real spaces between them, so it wraps like text and is centred with text-align. */
+.ab-alert-line {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.45rem, 5.6vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1.28;
+  text-wrap: balance;
+  color: #fff;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.9), 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.ab-alert-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.ab-alert-done,
+.ab-alert-back {
+  width: 100%;
+  height: 58px;
+  padding: 0 28px;
+  font: inherit;
+  font-size: 19px;
+  font-weight: 700;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ab-alert-done {
+  color: #000;
+  background: #fff;
+  border: 0;
+}
+
+.ab-alert-back {
+  color: #fff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.ab-alert-done:disabled,
+.ab-alert-back:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ab-alert-done:active:enabled,
+.ab-alert-back:active:enabled {
+  transform: scale(0.98);
+}
+
+/* The line for No connection and problems, as under the dial. It keeps its height so that nothing jumps. */
+.ab-alert-note {
+  min-height: 1.4em;
+  margin: 0;
+  max-width: 320px;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ab-alert-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-alert {
+    animation: none;
+  }
+}
+/* AB:TIMER.STOP-ALERT:END */
+
+/* AB:TIMER.COMEBACK:START */
+/* The comeback message (Comeback.tsx): for a few seconds after GO BACK IN one line floats at the top of the screen, under the row of the menu button (the menu button is in menu.css, z-index 40). It is a child of .ab-timer (position relative), so top and left are of the screen. It is position absolute, so it takes no room from the dial and the buttons and nothing moves when it comes and goes, and it never catches a tap (pointer-events none), so Pause and Hold to end session work at once. Its z-index (2) is above the dial and the buttons (1, see C31). It is never on the screen at the same time as the stop alert (the session runs while it is shown, the alert needs a paused session). It must stay plain: no blur behind it (a blur over the moving background made the phone laggy). The fade out is the same time as COMEBACK_FADE_MS in stopAlertLines.ts (CONNECTIONS.md C48). */
+.ab-comeback {
+  position: absolute;
+  top: 64px;
+  left: 50%;
+  z-index: 2;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(calc(100% - 40px), 420px);
+  padding: 10px 16px;
+  transform: translateX(-50%);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 500ms ease;
+  animation: ab-comeback-in 250ms ease;
+}
+
+.ab-comeback[data-leaving="true"] {
+  opacity: 0;
+}
+
+/* The line (LineText.tsx): words in boxes with real spaces between them, so it wraps like text and is centred with text-align. */
+.ab-comeback-line {
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes ab-comeback-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-comeback {
+    animation: none;
+    transition: none;
+  }
+}
+/* AB:TIMER.COMEBACK:END */
+
+/* AB:TIMER.MILESTONE:START */
+/* The milestone message (Milestone.tsx): for 30 seconds one line floats at the BOTTOM of the screen, in the room under the buttons, when the session reaches a milestone (the comeback message is the one that sits at the top). On a very low screen there is no room under the buttons and it floats over their lower part; it never catches a tap, so they still work. It is a child of .ab-timer (position relative), so bottom and left are of the screen. It is position absolute, so it takes no room from the dial and the buttons and nothing moves when it comes and goes, and it never catches a tap. Its bottom edge keeps clear of the home bar of a phone (the safe area). When it was missed it carries a small tag on top with the minutes it is late (ab-milestone-tag). */
+.ab-milestone {
+  position: absolute;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  z-index: 2;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: max-content;
+  max-width: min(calc(100% - 40px), 420px);
+  padding: 10px 16px;
+  transform: translateX(-50%);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.85), 0 0 3px rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 500ms ease;
+  animation: ab-milestone-in 250ms ease;
+}
+
+.ab-milestone[data-leaving="true"] {
+  opacity: 0;
+}
+
+/* The tag of a message that was missed: "9 min earlier". It fades in as the words start to come in. */
+.ab-milestone-tag {
+  margin: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  text-shadow: none;
+  animation: ab-milestone-tag-in 300ms ease backwards;
+}
+
+/* The line (LineText.tsx): words in boxes with real spaces between them, so it wraps like text and is centred with text-align. */
+.ab-milestone-line {
+  margin: 0;
+  text-align: center;
+}
+
+@keyframes ab-milestone-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ab-milestone-tag-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-milestone,
+  .ab-milestone-tag {
+    animation: none;
+  }
+
+  .ab-milestone {
+    transition: none;
+  }
+}
+/* AB:TIMER.MILESTONE:END */
+
+/* AB:TIMER.LINE-TEXT:START */
+/* The words of a line and the six effects of its keywords (LineText.tsx, CONNECTIONS.md C49). The stop alert and the comeback message show their line with it.
+   A word comes in from the top and out of a blur, one word after the other (80 ms apart), the same movement as the React Bits BlurText that these lines used before: blur 10px, 0 opacity and 50px up, then blur 5px, half opacity and 5px down, then sharp, in 700 ms, in a straight line. The number of the word (--word-i, set by LineText.tsx) times the 80 ms is its delay. backwards means that the first frame shows while the word waits, and that afterwards the word is just a word (no filter and no transform stays on it, so the phone has no extra layers to keep).
+   An effect starts 450 ms after its word started to come in, plays ONCE and then rests in its own look, which is the plain rule of the effect. Nothing loops. Only transform, opacity, colour and text-shadow are animated, on a few words, and never a blur behind the text (a blur over the moving background made the phone laggy, C22, C25).
+   What the six mean (lineMarkup.ts): glow = the important or true thing, heat = effort and earning, shake = failure and flinching, strike = the fake thing, ghost = nothing and fading, rise = growing and stacking. The names are the values of data-effect, so a new name in EFFECTS needs a rule here, and a rule here needs a name in EFFECTS. */
+.ab-line-word {
+  display: inline-block;
+  animation: ab-word-in 700ms linear calc(var(--word-i) * 80ms) backwards;
+}
+
+.ab-fx {
+  display: inline-block;
+  position: relative;
+}
+
+/* glow: bright white with a soft violet halo. It flares up and settles. */
+.ab-fx[data-effect="glow"] {
+  color: #fff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.85), 0 0 30px rgba(182, 156, 255, 0.8);
+  animation: ab-fx-glow 1400ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+/* heat: the word warms up from white to ember orange. */
+.ab-fx[data-effect="heat"] {
+  color: #ff8a3d;
+  text-shadow: 0 0 10px rgba(255, 100, 30, 0.65), 0 0 22px rgba(255, 60, 20, 0.35);
+  animation: ab-fx-heat 1200ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+/* shake: a quick tremble that dies down, and the word stays a little red. */
+.ab-fx[data-effect="shake"] {
+  color: #ff8c9a;
+  animation: ab-fx-shake 700ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+/* strike: the word dims and a line is drawn through it from the left. */
+.ab-fx[data-effect="strike"] {
+  opacity: 0.6;
+  animation: ab-fx-strike 600ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+.ab-fx[data-effect="strike"]::after {
+  content: "";
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  top: 55%;
+  height: 0.09em;
+  min-height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: left center;
+  animation: ab-fx-strike-line 450ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+/* ghost: the word fades away, flickers once, and is left faint. */
+.ab-fx[data-effect="ghost"] {
+  opacity: 0.38;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  animation: ab-fx-ghost 1600ms ease-in-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+/* rise: the word lifts and grows past its place, then settles a little higher and bigger, in mint green. */
+.ab-fx[data-effect="rise"] {
+  color: #7dffb0;
+  text-shadow: 0 0 10px rgba(80, 255, 160, 0.45);
+  transform: translateY(-0.05em) scale(1.06);
+  animation: ab-fx-rise 900ms ease-out calc(var(--word-i) * 80ms + 450ms) backwards;
+}
+
+@keyframes ab-word-in {
+  0% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(-50px);
+  }
+  50% {
+    opacity: 0.5;
+    filter: blur(5px);
+    transform: translateY(5px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes ab-fx-glow {
+  0% {
+    text-shadow: 0 0 0 rgba(255, 255, 255, 0), 0 0 0 rgba(182, 156, 255, 0);
+  }
+  45% {
+    text-shadow: 0 0 18px #fff, 0 0 44px rgba(182, 156, 255, 1);
+  }
+}
+
+@keyframes ab-fx-heat {
+  0% {
+    color: #fff;
+    text-shadow: 0 0 0 rgba(255, 100, 30, 0), 0 0 0 rgba(255, 60, 20, 0);
+  }
+  55% {
+    color: #ffd08a;
+    text-shadow: 0 0 14px rgba(255, 170, 60, 0.95), 0 0 30px rgba(255, 90, 20, 0.7);
+  }
+}
+
+@keyframes ab-fx-shake {
+  0% {
+    color: #fff;
+    transform: translateX(0);
+  }
+  10% {
+    color: #ff8c9a;
+    transform: translateX(-4px) rotate(-1deg);
+  }
+  20% {
+    transform: translateX(4px) rotate(1deg);
+  }
+  30% {
+    transform: translateX(-3px) rotate(-1deg);
+  }
+  40% {
+    transform: translateX(3px) rotate(1deg);
+  }
+  50% {
+    transform: translateX(-2px);
+  }
+  60% {
+    transform: translateX(2px);
+  }
+  70% {
+    transform: translateX(-1px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes ab-fx-strike {
+  0% {
+    opacity: 1;
+  }
+}
+
+@keyframes ab-fx-strike-line {
+  0% {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes ab-fx-ghost {
+  0% {
+    opacity: 1;
+  }
+  30% {
+    opacity: 0.12;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  70% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes ab-fx-rise {
+  0% {
+    color: #fff;
+    transform: translateY(0.5em) scale(0.9);
+  }
+  60% {
+    transform: translateY(-0.12em) scale(1.12);
+  }
+}
+
+/* People who asked for less motion get the words and the effects at rest at once: no blur-in, no tremble, no flicker. The colours stay. */
+@media (prefers-reduced-motion: reduce) {
+  .ab-line-word,
+  .ab-fx,
+  .ab-fx[data-effect="strike"]::after {
+    animation: none;
+  }
+}
+/* AB:TIMER.LINE-TEXT:END */
+
+/* AB:TIMER.BG:START */
+/* The moving background (TimerBackground.tsx): it fills the whole screen, sits at the very bottom, is dimmed so that the white digits stay easy to read, and never catches a tap. It has its own black, so that the screen is black before the library animation is made and while it fades (CONNECTIONS.md C37). It fades in when a session starts and out when it ends. The fade time is the same as BG_FADE_MS in backgroundLook.ts (CONNECTIONS.md C38). The opacity of 0.5 is the one number that decides how bright the whole background is: a higher number gives brighter colours and harder-to-read digits. */
+.ab-timer-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: none;
+  background: #000;
+  opacity: 0.5;
+  transition: opacity 700ms ease;
+  animation: ab-timer-bg-in 700ms ease;
+}
+
+.ab-timer-bg canvas {
+  display: block;
+}
+
+/* The bottom of the screen is kept a little darker, so that the message that comes up from the bottom is easy to read: 45 percent black at the very bottom, gone at 60 percent of the height. It lies over the library animation and never catches a tap (CONNECTIONS.md C37). */
+.ab-timer-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0) 60%);
+}
+
+.ab-timer-bg[data-out="yes"] {
+  opacity: 0;
+}
+
+.ab-timer[data-state="paused"] .ab-timer-bg {
+  opacity: 0.2;
+}
+
+@keyframes ab-timer-bg-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ab-timer-bg {
+    animation: none;
+  }
+}
+/* AB:TIMER.BG:END */
